@@ -1,0 +1,156 @@
+# WorkPartner Agent Configuration
+
+agent:
+  name: "WorkPartner"
+  max_turns: 1000
+  # Phase 3: context compression
+  compression_threshold: 200
+  compression_keep_recent: 20
+
+providers:
+  default: "openai"
+  openai:
+    api_key: "${DASHSCOPE_API_KEY}"
+    model: "qwen3.6-plus"
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    max_tokens: 8192
+    temperature: 0.7
+
+# Phase 5: Model routing — per-purpose model selection
+models:
+  chat:
+    provider: "openai"
+    model: "qwen3.6-plus"
+  utility:
+    provider: "openai"
+    model: "qwen3.6-plus"
+  utility_large:
+    provider: "openai"
+    model: "qwen3.6-plus"
+  vision:
+    provider: "openai"
+    model: "doubao-seed-2-0-lite-260215"
+    base_url: "https://ark.cn-beijing.volces.com/api/v3"
+    api_key: "${ARK_API_KEY}"
+    max_tokens: 512
+    temperature: 0.1
+
+
+# Phase 9 — desktop control settings
+desktop:
+  grid_spacing: 100        # px between grid lines (0 = no grid)
+  fail_safe: true         # move mouse to (0,0) corner to abort
+  pause: 0.8              # seconds between pyautogui actions
+  dpi_aware: true         # high-DPI fix: makes screenshot coords = click coords
+  # Dedicated vision model for coordinate reading (separate from chat model)
+  vision:
+    api_key: "${ARK_API_KEY}"
+    model: "doubao-seed-2-0-lite-260215"
+    base_url: "https://ark.cn-beijing.volces.com/api/v3"
+    max_tokens: 512
+    temperature: 0.1
+
+
+skills:
+  directory: "./skills"
+  auto_load: true
+
+tools:
+  # Phase 2 — file & code tools
+  # Phase 4 — todo tools
+  # Phase 9 — desktop control tools
+  enabled:
+    - file_read
+    - file_write
+    - file_patch
+    - code_run
+    - todo_add
+    - todo_list
+    - todo_update
+    - todo_delete
+    - desktop_screenshot
+    - desktop_click
+    - desktop_move
+    - desktop_drag
+    - desktop_scroll
+    - desktop_type
+    - desktop_press
+    - desktop_get_windows
+    - desktop_focus_window
+    - desktop_get_screen_info
+    - desktop_locate
+    - web_search
+    - web_extract
+    - im_notify
+
+tasks:
+  file: "./tasks.json"
+  schedules_file: "./scheduled_tasks.json"
+
+executor:
+  poll_interval: 1800
+  min_interval: 60
+  max_interval: 3600
+  max_concurrent: 1
+  max_retries: 3
+
+memory:
+  dir: "./memory"
+
+supervisor:
+  enabled: true
+  daily_report_time: "18:00"
+  quality_check: "heuristic"
+  action_item_limit: 10
+  llm_quality_check: false   # 开启后对每个完成任务追加 LLM 语义检查
+
+# Cron scheduling — managed agent auto-execution
+scheduler:
+  timezone: "Asia/Shanghai"
+
+# Session persistence — SqliteSaver + metadata in history/
+history:
+  directory: "./history"
+
+# MCP client — dynamic tool injection
+mcp:
+  auto_connect: false          # start() 时自动连接 enabled servers
+  tool_prefix: "mcp"          # 工具名前缀
+  # servers: []               # 运行时通过 mcp_server_connect 添加，或在这里预配置
+
+# IM notification targets — used by im_notify tool
+# Keys are names the agent uses; values are Feishu receive_ids.
+#   ou_xxx  → private message (receive_id_type: open_id)
+#   oc_xxx  → group chat     (receive_id_type: chat_id)
+im:
+  targets:
+    me: "${FEISHU_MY_OPEN_ID}"   # DM to yourself (from .env)
+    team: "${FEISHU_MY_TEAM_ID}"
+
+# IM Bridge — connect WorkPartner to messaging platforms.
+# Disabled by default: fill in your credentials in .env, then enable.
+im_bridge:
+  enabled: false
+  adapters:
+    telegram:
+      enabled: false
+      token: "${TELEGRAM_BOT_TOKEN}"
+      dm_policy: "open"        # open | allowlist | disabled
+      group_policy: "open"     # open | allowlist | disabled
+      allow_from: []           # user ID allowlist
+      connection_mode: "polling"  # polling | webhook
+    feishu:
+      enabled: false
+      app_id: "${FEISHU_APP_ID}"
+      app_secret: "${FEISHU_APP_SECRET}"
+      connection_mode: "websocket"  # websocket | webhook
+      dm_policy: "open"        # open | allowlist | disabled
+      group_policy: "mention"  # open | mention | disabled
+      # Webhook mode only. If you expose this endpoint beyond localhost
+      # (e.g. behind a reverse proxy), you MUST set FEISHU_VERIFY_TOKEN
+      # (and optionally FEISHU_ENCRYPT_KEY) in .env.
+      webhook_host: "127.0.0.1"
+      webhook_port: 8080
+      webhook_path: "/feishu/webhook"
+
+

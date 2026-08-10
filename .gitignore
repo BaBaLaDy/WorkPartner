@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.eggs/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node / frontend build
+node_modules/
+dist/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Environment variables (contains secrets — never commit)
+.env
+
+# Runtime state (created locally on first run)
+history/
+memory/
+tasks.json
+scheduled_tasks.json
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs & temp
+*.log
+*.pid
+temp/
+tmp/
+*.tmp
+
+# AI coding assistant workspace files
+.claude/
+.codex/
+.agents/
+CLAUDE.md
+AGENTS.md

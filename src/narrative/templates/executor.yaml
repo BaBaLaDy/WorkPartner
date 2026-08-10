@@ -1,0 +1,7 @@
+# Executor (沈衡) narrative templates
+start: "{actor}着手处理「{task}」。"
+complete: "{actor}搞定了「{task}」。"
+fail: "{actor}在「{task}」上碰到了钉子，需要调整方案。"
+cancel: "{actor}放下了「{task}」，先不做了。"
+create: "执行任务「{task}」已下达。"
+handoff: "{actor}把「{task}」的结果转给了{next_actor}。"

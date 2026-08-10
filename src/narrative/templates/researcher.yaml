@@ -1,0 +1,7 @@
+# Researcher (林澈) narrative templates
+start: "{actor}接过资料，去核对「{task}」了。"
+complete: "{actor}核对完了，「{task}」的资料已整理好。"
+fail: "{actor}在「{task}」上遇到了问题，还需要更多信息。"
+cancel: "{actor}停下了手头关于「{task}」的调研。"
+create: "新调研任务「{task}」已下发。"
+handoff: "{actor}把「{task}」的调研结果交给了{next_actor}。"

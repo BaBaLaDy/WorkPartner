@@ -1,0 +1,7 @@
+# Task Agent (小管家) narrative templates
+start: "{actor}开始跟进「{task}」。"
+complete: "{actor}已经把「{task}」安排妥当了。"
+fail: "{actor}在协调「{task}」时遇到了困难。"
+cancel: "{actor}取消了「{task}」的跟进。"
+create: "小管家新建了任务「{task}」。"
+handoff: "{actor}把「{task}」的进展同步给了{next_actor}。"

@@ -1,0 +1,7 @@
+# Reporter (周简) narrative templates
+start: "{actor}开始整理「{task}」的报告了。"
+complete: "{actor}的报告「{task}」写好了。"
+fail: "{actor}在整理「{task}」报告时卡住了，结论不够扎实。"
+cancel: "{actor}中止了「{task}」的报告撰写。"
+create: "新报告任务「{task}」已安排。"
+handoff: "{actor}把「{task}」的报告交给了{next_actor}审核。"
