@@ -35,6 +35,7 @@ import json
 import logging
 import os
 import queue
+import re
 import threading
 import time
 from typing import TYPE_CHECKING
@@ -86,7 +87,7 @@ except ImportError:
 MAX_MESSAGE_LENGTH = 15000
 _FEISHU_DOMAIN = "https://open.feishu.cn"
 _DEFAULT_WEBHOOK_PATH = "/feishu/webhook"
-_DEFAULT_WEBHOOK_HOST = "0.0.0.0"
+_DEFAULT_WEBHOOK_HOST = "127.0.0.1"
 _DEFAULT_WEBHOOK_PORT = 8899
 
 # Text batching: merge Feishu client-side message splits
@@ -160,8 +161,9 @@ class FeishuAdapter(BaseAdapter):
             "FEISHU_CONNECTION_MODE", config.get("connection_mode", "websocket"),
         ).strip()
 
-        # Policies
-        self._dm_policy = config.get("dm_policy", "open")
+        # Policies — DM defaults to allowlist: the agent can execute code
+        # and control the desktop, so strangers must be opted in explicitly.
+        self._dm_policy = config.get("dm_policy", "allowlist")
         self._group_policy = config.get("group_policy", "mention")
         self._allow_from = self._coerce_list(config.get("allow_from", []))
 
@@ -277,6 +279,15 @@ class FeishuAdapter(BaseAdapter):
             if self._connection_mode == "webhook":
                 if not _AIOHTTP_AVAILABLE:
                     logger.error("[feishu] aiohttp required for webhook mode")
+                    return False
+                if not self._verify_token:
+                    logger.error(
+                        "[feishu] Webhook mode requires FEISHU_VERIFY_TOKEN — "
+                        "without it anyone who reaches the endpoint can forge "
+                        "events and drive the agent. Set the token (Feishu "
+                        "console → app → event subscription) or use "
+                        "connection_mode: websocket instead."
+                    )
                     return False
                 await self._start_webhook()
             else:
@@ -717,7 +728,10 @@ class FeishuAdapter(BaseAdapter):
             if resp.success() and resp.file:
                 ext_map = {"image": ".jpg", "file": ".bin", "media": ".bin"}
                 ext = ext_map.get(msg_type, ".bin")
-                path = os.path.join(cache_dir, f"feishu_{message_id}{ext}")
+                # message_id comes from the event body — sanitise it so a
+                # forged value cannot escape cache_dir via path separators.
+                safe_id = re.sub(r"[^A-Za-z0-9_-]", "_", message_id)
+                path = os.path.join(cache_dir, f"feishu_{safe_id}{ext}")
 
                 with open(path, "wb") as f:
                     f.write(resp.file.read())

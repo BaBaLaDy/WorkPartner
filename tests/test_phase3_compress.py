@@ -26,7 +26,7 @@ def test_should_compress_condition():
     assert should_compress(state, threshold=30) == "compress"
     print(f"  [PASS] {len(state['messages'])} msgs → trigger compress")
 
-    # Already compressed, below 1.5x threshold → skip re-compress
+    # Already compressed, below 2x threshold → skip re-compress
     state = {
         "messages": [HumanMessage(content=f"msg {i}") for i in range(40)],
         "compression_summary": "existing summary",
@@ -34,9 +34,17 @@ def test_should_compress_condition():
     assert should_compress(state, threshold=30) == "chat"
     print(f"  [PASS] {len(state['messages'])} msgs + existing summary → skip re-compress")
 
-    # Already compressed, above 1.5x threshold → re-compress
+    # Already compressed, still below 2x threshold → skip re-compress
     state = {
         "messages": [HumanMessage(content=f"msg {i}") for i in range(50)],
+        "compression_summary": "existing summary",
+    }
+    assert should_compress(state, threshold=30) == "chat"
+    print(f"  [PASS] {len(state['messages'])} msgs + existing summary → skip (below 2x)")
+
+    # Already compressed, reached 2x threshold → re-compress
+    state = {
+        "messages": [HumanMessage(content=f"msg {i}") for i in range(65)],
         "compression_summary": "existing summary",
     }
     assert should_compress(state, threshold=30) == "compress"

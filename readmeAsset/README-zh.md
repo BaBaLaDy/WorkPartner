@@ -12,7 +12,7 @@
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/Python-3.11+-blue.svg?style=flat-square" alt="Python" /></a>
   <a href="https://github.com/langchain-ai/langgraph"><img src="https://img.shields.io/badge/LangGraph-1.0%2B-green.svg?style=flat-square" alt="LangGraph" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="License" /></a>
-  <a href="https://github.com/your-org/workpartner/stargazers"><img src="https://img.shields.io/github/stars/your-org?style=flat-square&label=Stars" alt="Stars" /></a>
+  <a href="https://github.com/BaBaLaDy/WorkPartner/stargazers"><img src="https://img.shields.io/github/stars/BaBaLaDy/WorkPartner?style=flat-square&label=Stars" alt="Stars" /></a>
 </p>
 
 <p align="center">
@@ -139,8 +139,8 @@ START → pre → 需要压缩? ──是──→ compress → chat
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/your-org/workpartner.git
-cd workpartner
+git clone https://github.com/BaBaLaDy/WorkPartner.git
+cd WorkPartner
 
 # 2. 创建环境并安装依赖
 conda create -n workpartner python=3.11
@@ -440,6 +440,7 @@ skills/
 ### 运行测试
 
 ```bash
+pip install -r requirements-dev.txt
 conda run -n workpartner pytest tests/
 conda run -n workpartner pytest tests/ --cov=src --cov-report=term-missing
 ```
@@ -504,7 +505,7 @@ WorkPartner 是一个**以你自己的权限行动的个人助手**。按设计�
 1. **只在你信任的机器上运行它**，在让 IM 渠道无人值守地触发任务前三思。
 2. **保持 API 服务仅本机可访问。** 它没有鉴权，默认绑定 `127.0.0.1`——不要把 8000 端口暴露到网络。
 3. **永远不要提交你的 `.env`。** 复制 `.env.example` 并将真实密钥保存在本地。
-4. **配置 IM 访问策略。** 如果启用飞书/Telegram 桥接，请检查 `config.yaml` 中的 `dm_policy` / `group_policy` / `allow_from`——"open" 群策略会让任何 @机器人的人都能向它下达指令。
+4. **配置 IM 访问策略。** 如果启用飞书/Telegram 桥接，私聊默认为 `allowlist` 模式——请先在 `config.yaml` 的 `allow_from` 中加入你自己的用户 ID。"open" 群策略会让任何 @机器人的人都能向它下达指令。
 5. **飞书 Webhook 模式：** 如果 webhook 端点必须公网可达，请置于带 HTTPS 的反向代理之后，并设置 `FEISHU_VERIFY_TOKEN` 以拒绝伪造事件。
 
 ---

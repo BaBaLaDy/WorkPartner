@@ -14,9 +14,20 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from pytest import fixture
+
 # -- Add project root to path --
 PROJECT_ROOT = Path(__file__).parent.parent
-os.chdir(PROJECT_ROOT)
+
+
+@fixture(autouse=True)
+def _chdir_project_root():
+    """Run tests from the project root (restores the original cwd after each
+    test so this file does not pollute the rest of the suite)."""
+    prev = Path.cwd()
+    os.chdir(PROJECT_ROOT)
+    yield
+    os.chdir(prev)
 
 
 class TestScheduledTaskModel(unittest.TestCase):
@@ -327,8 +338,15 @@ class TestCronTools(unittest.TestCase):
         self.tmpdir = tempfile.TemporaryDirectory()
         self.orig_cwd = os.getcwd()
         os.chdir(self.tmpdir.name)
+        # cron_* tools read a module-level ScheduleService — inject a fresh
+        # one backed by the per-test temp cwd before each test.
+        from src.services.schedule_service import ScheduleService
+        from src.tools import cron_tools
+        cron_tools.setup_schedule_service(ScheduleService())
+        self._cron_tools = cron_tools
 
     def tearDown(self):
+        self._cron_tools.setup_schedule_service(None)
         os.chdir(self.orig_cwd)
         self.tmpdir.cleanup()
 

@@ -21,9 +21,10 @@ Thumbs.db
 # Environment variables (contains secrets — never commit)
 .env
 
-# Runtime state (created locally on first run)
-history/
-memory/
+# Runtime state (created locally on first run).
+# Root-anchored — must NOT match src/memory/ (source package).
+/history/
+/memory/
 tasks.json
 scheduled_tasks.json
 *.db

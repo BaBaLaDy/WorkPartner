@@ -113,15 +113,6 @@ def test_persistence():
         Path(tmp).unlink(missing_ok=True)
 
 
-def test_streamlit_app_import():
-    """Sanity check: streamlit_app module can be imported."""
-    # Streamlit's set_page_config must be first — we can only import-check the
-    # non-streamlit dependencies the app uses.
-    from src.frontend.streamlit_app import build_system_prompt, init_session, BASE_SYSTEM_PROMPT
-    assert "WorkPartner" in BASE_SYSTEM_PROMPT
-    print(f"  [PASS] streamlit_app helpers importable")
-
-
 def test_todolist_cancelled_filtering():
     """Test cancelled tasks don't appear in pending list."""
     with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:

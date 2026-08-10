@@ -378,7 +378,7 @@ export async function sendChatMessage(
   signal?: AbortSignal,
   onEvent?: (event: { type: string; content?: string; data?: Record<string, unknown> }) => void,
 ) {
-  const res = await fetch('/api/supervisor/chat', {
+  const res = await fetch(`${API_BASE}/supervisor/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, thread_id: threadId }),

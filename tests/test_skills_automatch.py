@@ -26,43 +26,43 @@ def test_xml_format():
 
     print("[PASS] XML format: correct")
     print(f"  Prompt size: {len(prompt)} chars (should be small - metadata only)")
-    return True
 
 
 def test_explicit_mention_only():
-    """Verify that only explicit mentions trigger injection, not keywords."""
+    """Verify that only explicit mentions trigger injection, not keywords.
+
+    Uses the bundled 'example' sample skill (skills/example/)."""
     loader = SkillLoader(Path(__file__).parent.parent / "skills")
     loader.load_all()
     injector = SkillInjector(loader)
 
     # Explicit mentions -> SHOULD inject
-    assert injector.match_and_inject("请用pdf这个skill来读取当前目录的pdf")
-    print("[PASS] Explicit: '请用pdf这个skill来读取' -> matched (injected)")
+    assert injector.match_and_inject("请用example这个skill来演示一下")
+    print("[PASS] Explicit: '请用example这个skill来演示' -> matched (injected)")
 
     injector.reset_session()
 
-    assert injector.match_and_inject("use the pdf skill to read the document")
-    print("[PASS] Explicit: 'use the pdf skill to read' -> matched (injected)")
+    assert injector.match_and_inject("use the example skill to show me")
+    print("[PASS] Explicit: 'use the example skill' -> matched (injected)")
 
     injector.reset_session()
 
-    assert injector.match_and_inject("/pdf help me read this")
-    print("[PASS] Explicit: '/pdf help me' -> matched (injected)")
+    assert injector.match_and_inject("/example help me with this")
+    print("[PASS] Explicit: '/example help me' -> matched (injected)")
 
     injector.reset_session()
 
     # Keyword matches (no explicit mention) -> should NOT inject
     # These rely on the model reading the SKILL.md on its own
-    assert not injector.match_and_inject("帮我读一下这个PDF文件的内容")
-    print("[PASS] Keyword only: '帮我读PDF文件' -> NOT injected (model decides)")
+    assert not injector.match_and_inject("给我一个使用示例")
+    print("[PASS] Keyword only: '给我一个使用示例' -> NOT injected (model decides)")
 
-    assert not injector.match_and_inject("把这几个pdf合并成一个文件")
-    print("[PASS] Keyword only: 'pdf合并' -> NOT injected (model decides)")
+    assert not injector.match_and_inject("show me a sample of the report")
+    print("[PASS] Keyword only: 'sample of the report' -> NOT injected (model decides)")
 
     assert not injector.match_and_inject("今天天气怎么样")
     print("[PASS] Unrelated: '今天天气怎么样' -> NOT injected")
 
-    return True
 
 
 def test_explicit_mention_helper():
@@ -81,7 +81,6 @@ def test_explicit_mention_helper():
     assert not _explicit_mention("xlsx", "help me with the pdf")
 
     print("[PASS] _explicit_mention: all cases correct")
-    return True
 
 
 def test_loaded_tracking():
@@ -91,11 +90,11 @@ def test_loaded_tracking():
     injector = SkillInjector(loader)
 
     # First time: should match
-    result = injector.match_and_inject("use the pdf skill")
+    result = injector.match_and_inject("use the example skill")
     assert result, "First mention should match"
 
     # Second time: same skill already loaded, should skip
-    result2 = injector.match_and_inject("use the pdf skill again")
+    result2 = injector.match_and_inject("use the example skill again")
     assert not result2, "Second mention should skip (already loaded)"
 
     print("[PASS] Loaded tracking: dedup works")

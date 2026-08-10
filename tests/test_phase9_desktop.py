@@ -1,6 +1,8 @@
 """Phase 9 integration tests — desktop control tools.
 
-Desktop tools make real GUI calls — all pyautogui operations are mocked."""
+Desktop tools make real GUI calls — all pyautogui operations are mocked.
+On headless systems (no DISPLAY / missing GUI deps) the whole module is
+skipped instead of failing at collection time."""
 import sys
 import os
 import json
@@ -10,12 +12,26 @@ from io import BytesIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import pyautogui
 from PIL import Image
-from src.tools.defaults import create_default_registry
-from src.tools.desktop import _parse_region, SCREENSHOT_DIR, SCREENSHOT_PATH
+
+# GUI-dependent imports: pyautogui raises KeyError('DISPLAY') on headless
+# Linux at import time, so catch broadly and skip the module instead.
+try:
+    import pyautogui  # noqa: F401
+    from src.tools.defaults import create_default_registry
+    from src.tools.desktop import _parse_region, SCREENSHOT_DIR, SCREENSHOT_PATH
+    GUI_AVAILABLE = True
+except Exception:
+    GUI_AVAILABLE = False
+
+pytestmark = pytest.mark.skipif(
+    not GUI_AVAILABLE,
+    reason="desktop tools require a GUI environment (pyautogui/display)",
+)
 
 
 def _json_result(result):

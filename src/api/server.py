@@ -153,7 +153,7 @@ def create_app(engine: WorkPartnerEngine, dev_mode: bool = True,
     return app
 
 
-def create_uvicorn_server(engine: WorkPartnerEngine, host: str = "0.0.0.0",
+def create_uvicorn_server(engine: WorkPartnerEngine, host: str = "127.0.0.1",
                           port: int = 8000, dev_mode: bool = True,
                           skip_lifespan_startup: bool = False):
     """Create a controllable uvicorn Server instance."""
@@ -165,10 +165,13 @@ def create_uvicorn_server(engine: WorkPartnerEngine, host: str = "0.0.0.0",
     return uvicorn.Server(config)
 
 
-def run_api_server(engine: WorkPartnerEngine, host: str = "0.0.0.0",
+def run_api_server(engine: WorkPartnerEngine, host: str = "127.0.0.1",
                    port: int = 8000, dev_mode: bool = True,
                    skip_lifespan_startup: bool = False):
     """Start the uvicorn server (blocking).
+
+    The API has no authentication — keep host loopback unless you add
+    your own auth layer in front of it.
 
     Args:
         engine: The WorkPartnerEngine instance.
@@ -177,6 +180,11 @@ def run_api_server(engine: WorkPartnerEngine, host: str = "0.0.0.0",
         dev_mode: Enable CORS.
         skip_lifespan_startup: If True, caller must start engine services.
     """
+    if host not in ("127.0.0.1", "localhost", "::1"):
+        logger.warning(
+            "API server binding to non-loopback address %s — the API has "
+            "NO authentication. Make sure you know what you are doing.", host,
+        )
     logger.info("Starting API server on %s:%d (dev=%s)", host, port, dev_mode)
     server = create_uvicorn_server(
         engine, host=host, port=port, dev_mode=dev_mode,

@@ -133,13 +133,20 @@ class TelegramAdapter(BaseAdapter):
         super().__init__(config, bridge)
         self._token = os.getenv("TELEGRAM_BOT_TOKEN", config.get("token", "")).strip()
         self._app: Application | None = None
-        self._dm_policy = config.get("dm_policy", "open")
+        self._dm_policy = config.get("dm_policy", "allowlist")
         self._group_policy = config.get("group_policy", "open")
         self._allow_from = self._coerce_list(config.get("allow_from", []))
+        # Env-var allowlist (documented in module docstring), merged with
+        # the config-level allow_from list.
+        env_allowed = os.getenv("TELEGRAM_ALLOWED_USERS", "")
+        if env_allowed:
+            self._allow_from.extend(
+                u.strip() for u in env_allowed.split(",") if u.strip()
+            )
         self._connection_mode = config.get("connection_mode", "polling")
         # Text batching for client-side message splits
-        self._text_batch_delay = float(os.getenv("HERMES_TELEGRAM_TEXT_BATCH_DELAY", "0.6"))
-        self._text_batch_split_delay = float(os.getenv("HERMES_TELEGRAM_TEXT_BATCH_SPLIT_DELAY", "2.0"))
+        self._text_batch_delay = float(os.getenv("TELEGRAM_TEXT_BATCH_DELAY", "0.6"))
+        self._text_batch_split_delay = float(os.getenv("TELEGRAM_TEXT_BATCH_SPLIT_DELAY", "2.0"))
         self._pending_text: dict[str, IMessage] = {}
         self._pending_text_tasks: dict[str, asyncio.Task] = {}
 
@@ -187,17 +194,26 @@ class TelegramAdapter(BaseAdapter):
                 webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "")
                 webhook_port = int(os.getenv("TELEGRAM_WEBHOOK_PORT", "8443"))
                 webhook_secret = os.getenv("TELEGRAM_WEBHOOK_SECRET", "")
+                webhook_listen = os.getenv("TELEGRAM_WEBHOOK_HOST", "127.0.0.1")
                 if webhook_url:
+                    if not webhook_secret:
+                        logger.error(
+                            "[telegram] Webhook mode requires TELEGRAM_WEBHOOK_SECRET — "
+                            "without it anyone who reaches the endpoint can forge "
+                            "updates and drive the agent. Set the secret or use "
+                            "connection_mode: polling instead."
+                        )
+                        return False
                     from urllib.parse import urlparse
                     webhook_path = urlparse(webhook_url).path or "/telegram"
                     await self._app.updater.start_webhook(
-                        listen="0.0.0.0", port=webhook_port,
+                        listen=webhook_listen, port=webhook_port,
                         url_path=webhook_path, webhook_url=webhook_url,
-                        secret_token=webhook_secret or None,
+                        secret_token=webhook_secret,
                         allowed_updates=Update.ALL_TYPES,
                         drop_pending_updates=True,
                     )
-                    logger.info("[telegram] Webhook mode on 0.0.0.0:%d%s", webhook_port, webhook_path)
+                    logger.info("[telegram] Webhook mode on %s:%d%s", webhook_listen, webhook_port, webhook_path)
             else:
                 await self._app.updater.start_polling(
                     allowed_updates=Update.ALL_TYPES,
@@ -306,6 +322,22 @@ class TelegramAdapter(BaseAdapter):
         from_user = query.from_user
         if not from_user:
             return
+
+        # Apply the same policy checks as regular messages — inline-button
+        # callbacks must not bypass dm/group policies.
+        chat = query.message.chat if query.message else None
+        chat_type = "group" if chat and chat.type in ("group", "supergroup") else "dm"
+        uid = str(from_user.id)
+        if chat_type == "group":
+            if self._group_policy == "disabled":
+                return
+            if self._group_policy == "allowlist" and uid not in self._allow_from:
+                return
+        else:
+            if self._dm_policy == "disabled":
+                return
+            if self._dm_policy == "allowlist" and uid not in self._allow_from:
+                return
 
         msg = IMessage(
             platform="telegram",

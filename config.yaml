@@ -135,17 +135,21 @@ im_bridge:
     telegram:
       enabled: false
       token: "${TELEGRAM_BOT_TOKEN}"
-      dm_policy: "open"        # open | allowlist | disabled
+      # allowlist = only user IDs listed in allow_from may use the bot.
+      # The agent can run code on your machine — keep DMs locked down.
+      dm_policy: "allowlist"   # open | allowlist | disabled
       group_policy: "open"     # open | allowlist | disabled
-      allow_from: []           # user ID allowlist
+      allow_from: []           # e.g. ["123456789"]  (your Telegram user ID)
       connection_mode: "polling"  # polling | webhook
     feishu:
       enabled: false
       app_id: "${FEISHU_APP_ID}"
       app_secret: "${FEISHU_APP_SECRET}"
       connection_mode: "websocket"  # websocket | webhook
-      dm_policy: "open"        # open | allowlist | disabled
+      # allowlist = only open_ids listed in allow_from may DM the bot.
+      dm_policy: "allowlist"   # open | allowlist | disabled
       group_policy: "mention"  # open | mention | disabled
+      allow_from: []           # e.g. ["${FEISHU_MY_OPEN_ID}"]
       # Webhook mode only. If you expose this endpoint beyond localhost
       # (e.g. behind a reverse proxy), you MUST set FEISHU_VERIFY_TOKEN
       # (and optionally FEISHU_ENCRYPT_KEY) in .env.

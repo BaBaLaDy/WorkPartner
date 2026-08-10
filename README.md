@@ -12,7 +12,7 @@
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/Python-3.11+-blue.svg?style=flat-square" alt="Python" /></a>
   <a href="https://github.com/langchain-ai/langgraph"><img src="https://img.shields.io/badge/LangGraph-1.0%2B-green.svg?style=flat-square" alt="LangGraph" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="License" /></a>
-  <a href="https://github.com/your-org/workpartner/stargazers"><img src="https://img.shields.io/github/stars/your-org/workpartner?style=flat-square&label=Stars" alt="Stars" /></a>
+  <a href="https://github.com/BaBaLaDy/WorkPartner/stargazers"><img src="https://img.shields.io/github/stars/BaBaLaDy/WorkPartner?style=flat-square&label=Stars" alt="Stars" /></a>
 </p>
 
 <p align="center">
@@ -140,8 +140,8 @@ START → pre → should_compress? ──yes──→ compress → chat
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/workpartner.git
-cd workpartner
+git clone https://github.com/BaBaLaDy/WorkPartner.git
+cd WorkPartner
 
 # 2. Create environment and install dependencies
 conda create -n workpartner python=3.11
@@ -442,6 +442,7 @@ See `config.yaml` for full reference.
 ### Running Tests
 
 ```bash
+pip install -r requirements-dev.txt
 conda run -n workpartner pytest tests/
 conda run -n workpartner pytest tests/ --cov=src --cov-report=term-missing
 ```
@@ -507,7 +508,7 @@ This is the whole point of the project, but it also means you should:
 1. **Run it only on machines you trust**, and think twice before letting IM channels trigger tasks unattended.
 2. **Keep the API server local.** It has no authentication and binds to `127.0.0.1` by default — do not expose port 8000 to the network.
 3. **Never commit your `.env`.** Copy `.env.example` and keep real keys local.
-4. **Configure IM access policies.** If you enable the Feishu/Telegram bridge, review `dm_policy` / `group_policy` / `allow_from` in `config.yaml` — an "open" group policy lets anyone who @mentions the bot give it commands.
+4. **Configure IM access policies.** If you enable the Feishu/Telegram bridge, DMs default to `allowlist` — add your own user ID to `allow_from` in `config.yaml` first. An "open" group policy lets anyone who @mentions the bot give it commands.
 5. **Feishu webhook mode:** if the webhook endpoint must be publicly reachable, put it behind a reverse proxy with HTTPS and set `FEISHU_VERIFY_TOKEN` so forged events are rejected.
 
 ---

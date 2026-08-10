@@ -267,7 +267,10 @@ class BridgeManager:
 
         # Create new thread via SessionManager (does not change active_id)
         sm = self.agent_session.sessions
-        name = f"{session_key}" if not display_name else f"{session_key} ({display_name})"
+        # display_name comes from the IM platform (attacker-controlled) —
+        # sanitize it before persisting.
+        safe_display = _sanitize_thread_name(display_name) if display_name else ""
+        name = f"{session_key}" if not safe_display else f"{session_key} ({safe_display})"
         thread_id = sm.create_session(name)
 
         # Determine platform from session_key
@@ -277,7 +280,7 @@ class BridgeManager:
         self._bridge_sessions[session_key] = {
             "thread_id": thread_id,
             "session_key": session_key,
-            "display_name": display_name or "",
+            "display_name": safe_display,
             "platform": platform,
             "session_type": "bridge",
             "owner": platform,

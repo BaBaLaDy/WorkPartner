@@ -1,7 +1,9 @@
 {
-  "name": "web",
+  "name": "workpartner-web",
+  "description": "WorkPartner Web UI — office-style dashboard for the agent team",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
