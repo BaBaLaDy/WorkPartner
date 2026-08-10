@@ -1,9 +1,4 @@
-'''
-Descripttion: 
-version: 
-Author: WorkPartner Contributors
-Date: 2026-05-04 21:50:38
-'''
+"""LLM provider factory — builds chat models from config.yaml providers."""
 import os
 import yaml
 from pathlib import Path
